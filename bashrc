@@ -214,7 +214,74 @@ alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo
 #=============================================================================#
 #  FUNCTIONS
 #=============================================================================#
+# Password-protected zip function
+# Usage: ziplock <source_file_or_directory> [output_name.zip]
+ziplock() {
+    if [ -z "$1" ]; then
+        echo "Usage: ziplock <file_or_directory> [output_name.zip]"
+        return 1
+    fi
 
+    local source="$1"
+    local output="${2:-$(basename "$source").zip}"
+
+    if [ ! -e "$source" ]; then
+        echo "Error: '$source' not found."
+        return 1
+    fi
+
+    read -s -p "Enter zip password: " password
+    echo
+    read -s -p "Confirm password: " password_confirm
+    echo
+
+    if [ "$password" != "$password_confirm" ]; then
+        echo "Error: Passwords do not match."
+        return 1
+    fi
+
+    if [ -d "$source" ]; then
+        zip -r -P "$password" "$output" "$source"
+    else
+        zip -P "$password" "$output" "$source"
+    fi
+
+    if [ $? -eq 0 ]; then
+        echo "✔ Created password-protected archive: $output"
+    else
+        echo "✘ Failed to create archive."
+        return 1
+    fi
+}
+
+# Password-protected unzip function
+# Usage: unziplock <archive.zip> [destination_directory]
+unziplock() {
+    if [ -z "$1" ]; then
+        echo "Usage: unziplock <archive.zip> [destination_directory]"
+        return 1
+    fi
+
+    local archive="$1"
+    local dest="${2:-.}"
+
+    if [ ! -f "$archive" ]; then
+        echo "Error: '$archive' not found."
+        return 1
+    fi
+
+    read -s -p "Enter zip password: " password
+    echo
+
+    unzip -P "$password" "$archive" -d "$dest"
+
+    if [ $? -eq 0 ]; then
+        echo "✔ Extracted to: $dest"
+    else
+        echo "✘ Failed to extract (wrong password or corrupted archive)."
+        return 1
+    fi
+}
 #--- Go builder -------------------------------------------------------------#
 b() {
     local src="$1"
