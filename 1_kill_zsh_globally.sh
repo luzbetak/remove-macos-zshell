@@ -24,5 +24,5 @@ grep -q 'source ~/.bashrc' "$HOME/.bash_profile" || \
 # ensure ssh uses bash non-interactively
 echo 'export BASH_SILENCE_DEPRECATION_WARNING=1' >> "$HOME/.bashrc"
 
-echo "DONE. Bash only. Apple shut the fuck up."
+echo "DONE. Bash only. Apple zshell removed!"
 
